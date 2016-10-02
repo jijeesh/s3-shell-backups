@@ -4,8 +4,8 @@
 
 # set dump directory variables
 SRCDIR='/tmp/s3backups'
-DESTDIR='backup'
-BUCKET='j2mariadb'
+DESTDIR='foldername'
+BUCKET='bucketname'
 
 # database access details
 HOST='127.0.0.1'
