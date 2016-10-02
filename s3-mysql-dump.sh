@@ -4,27 +4,34 @@
 
 # set dump directory variables
 SRCDIR='/tmp/s3backups'
-DESTDIR='path/to/s3folder'
-BUCKET='s3bucket'
+DESTDIR='backup'
+BUCKET='j2mariadb'
 
 # database access details
 HOST='127.0.0.1'
 PORT='3306'
-USER='user'
-PASS='pass'
+USER='username'
+PASS='password'
 
+NOW=$(date +"%Y.%m.%d.%H.%M")
 #### END CONFIGURATION ####
 
 # make the temp directory if it doesn't exist and cd into it
 mkdir -p $SRCDIR
 cd $SRCDIR
 
-# dump each database to its own sql file and upload it to s3
-for DB in $(mysql -h$HOST -P$PORT -u$USER -p$PASS --BNe 'show databases' | grep -Ev 'mysql|information_schema|performance_schema')
+databases=`mysql -h $HOST --user=$USER --password=$PASS -e "SHOW DATABASES;" | tr -d "| " | grep -v Database`
+
+
+for DB in $databases;
 do
-mysqldump -h$HOST -P$PORT -u$USER -p$PASS --quote-names --create-options --force $DB > $DB.sql
-tar -czPf $DB.tar.gz $DB.sql
-/usr/bin/s3cmd put $SRCDIR/$DB.tar.gz s3://$BUCKET/$DESTDIR/ --reduced-redundancy
+if [ "$DB" != "information_schema" ] && [ "$DB" != _* ] ; then
+        echo "Dumping database: $DB"
+mysqldump -h $HOST --force --opt --user=$USER --password=$PASS --add-drop-database  --databases $DB > $NOW-$DB.sql
+
+tar -czPf $NOW-$DB.tar.gz $NOW-$DB.sql
+fi
+/bin/aws --profile j2sqlbackup s3 cp $SRCDIR/$NOW-$DB.tar.gz s3://$BUCKET/$DESTDIR/
 done
 
 # remove all files in our source directory
