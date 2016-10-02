@@ -10,6 +10,15 @@ The s3-mysql-backup.sh script performs the following operations each time you ru
 3. Tars all of the .sql files into a directory on the server.
 4. Uploads the tarred file to S3 and deletes the tarred file from the local server.
 5. Deletes backups older than 7 days from the S3 bucket.
+Setup1
+------
+install awscli
+example
+yum install awscli
+
+configure profile with the user key
+you can refer http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
+use aws command directly 
 
 Setup
 -----
